@@ -17,6 +17,7 @@ public class Client extends JFrame {
     DataOutputStream dos;
     Integer x, y;
     JPanel panel;
+    String executingTasks, tasksQueue;
     //RoundRectangle2D circle;
 
     class  ReadThread extends  Thread {
@@ -24,12 +25,14 @@ public class Client extends JFrame {
         public void run () {
             try {
                 while (true) {
-                    Integer myx = dis.readInt();
+                    /*Integer myx = dis.readInt();
                     Integer myy = dis.readInt();
                     x = myx;
                     y = myy;
                     System.out.println(x);
-                    System.out.println(y);
+                    System.out.println(y);*/
+                    tasksQueue = dis.readUTF();
+                    executingTasks = dis.readUTF();
                     panel.repaint();
                 }
             }
