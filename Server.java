@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Deque;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 
 public class Server {
     int port = 3124;
@@ -30,7 +31,9 @@ public class Server {
     //ReaderThread reader;
     public void task1() {
         try
-        {wait(1000);}
+        {   System.out.println("Task 1 started");
+            TimeUnit.SECONDS.sleep(10);
+            System.out.println("Task 1 ended!");}
         catch (InterruptedException ex) {
             ex.printStackTrace();;
         }
@@ -62,7 +65,10 @@ public class Server {
 
     public void task2() {
         try
-        {wait(5000);}
+        {
+            System.out.println("Task 2 started");
+            TimeUnit.SECONDS.sleep(5);;
+            System.out.println("Task 2 ended!");}
         catch (InterruptedException ex) {
             ex.printStackTrace();
         }
@@ -77,7 +83,7 @@ public class Server {
         @Override
         public void run () {
             int typeTask = threads.get(id).t.Taskid;
-
+            System.out.println();
             switch (typeTask)
             {
                 case 1: task1(); break;
@@ -85,31 +91,82 @@ public class Server {
                 default: task1(); break;
             }
             threads.get(id).busy = false;
-            count --;
+
+            String queueTask = new String();
+            try {
+                synchronized (this) {
+                    for (int j = 0; j < tasks.size(); j++) {
+                        queueTask += ("taskType " + tasks.get(j).Taskid + " Client: " + tasks.get(j).idClient + " | ");
+                    }
+                }
+                String executingTasks = new String();
+                synchronized (this) {
+                    for (int i = 0; i < threads.size(); i++) {
+                        if (threads.get(i).busy) {
+                            executingTasks += ("task type: " + threads.get(i).t.Taskid + " Client: " + threads.get(i).t.idClient + " | ");
+                        }
+                    }
+                }
+
+                for (int i = 0; i < dos.size(); i++) {
+                    dos.get(i).writeUTF(queueTask);
+                    dos.get(i).writeUTF(executingTasks);
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
             // terminate thread
         }
     }
 
     void popTask ()
     {
-        if (!tasks.isEmpty() && count < N) {
-            Task task = tasks.get(0);
-            tasks.remove(0);
-            int i = 0;
-            while (threads.get(i).busy && i < N)
-            {
-                i++;
-            }
-            if (i == N) {
-                // error
-            }
-            threads.get(i).t = task;
-            threads.get(i).busy = true;
-            count ++;
-            ExecuteThread ex = new ExecuteThread(i);
-            ex.start();
-
+        /*for (int i = 0; i<tasks.size(); i++)
+        {
+            System.out.println(tasks.get(i).Taskid);
         }
+        System.out.println("****************");
+        for(int i =0; i <threads.size(); i++) {
+            System.out.println(threads.get(i).busy);
+        }
+        System.out.println("777777777777");*/
+        synchronized (this) {
+            int i =0;
+            if (!tasks.isEmpty()) {
+                while (i < N ) {
+                    if (!threads.get(i).busy) break;
+                    i++;
+                }
+                if (i == N) {
+                    //System.out.println("error all are busy");
+                    return;
+                }
+                Task task = new Task(0,3,0);
+                try {
+                    task = tasks.get(0);
+
+                    System.out.println("got a task " + task.Taskid);
+                }
+                catch (java.lang.NullPointerException ex) {
+                    System.out.println("Exceptionf ff " + tasks.size());
+                    return;
+                }
+
+
+                tasks.remove(0);
+                for (int j = 0; j < tasks.size(); j++) {
+                    System.out.println(tasks.get(j).Taskid);
+                }
+
+                threads.get(i).t = task;
+                threads.get(i).busy = true;
+                count++;
+                ExecuteThread ex = new ExecuteThread(i);
+                ex.start();
+
+            }
+        }
+
     }
 
     class ReaderThread extends  Thread {
@@ -132,7 +189,7 @@ public class Server {
                     taskId = dis.get(id).readInt();
                     tasks.add(new Task(id, taskId, 0 ));
                     String queueTask = new String();
-                    
+
                     synchronized (this) {
                         for (int j = 0; j <tasks.size(); j++ )
                         {
@@ -143,7 +200,7 @@ public class Server {
                     synchronized (this ) {
                         for (int i = 0; i < threads.size(); i++) {
                             if (threads.get(i).busy) {
-                                executingTasks += ("task type: " + threads.get(i).t.Taskid + "Client: " + threads.get(i).t.idClient + " | ");
+                                executingTasks += ("task type: " + threads.get(i).t.Taskid + " Client: " + threads.get(i).t.idClient + " | ");
                             }
                         }
                     }
@@ -164,6 +221,7 @@ public class Server {
         @Override
         public void run() {
             while (true) {
+                //System.out.println("popping");
                 popTask();
             }
         }
@@ -213,11 +271,15 @@ public class Server {
             dis = new ArrayList<>();
             dos = new ArrayList<>();
             readers = new ArrayList<>();
+            N = 4;
             threads = new ArrayList<>();
+            for (int i = 0;i <N;i++) {
+                threads.add(new Threads());
+                threads.get(i).busy = false;
+            }
             tasks = new ArrayList<>();
             MyThread firstThread = new MyThread();
             TaskManager taskManager = new TaskManager();
-            N = 4;
             count = 0;
             firstThread.start();
             taskManager.start();

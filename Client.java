@@ -41,7 +41,7 @@ public class Client extends JFrame {
 
                     exQueue.setText("Executing tasks " + executingTasks);
                     waitQueue.setText("Queue of tasks " + tasksQueue);
-                    panel.repaint();
+                    //panel.repaint();
                 }
             }
             catch (java.io.IOException ex)
@@ -97,12 +97,14 @@ public class Client extends JFrame {
         startTask2.setMinimumSize(new Dimension(40,20));
 
         exQueue = new JLabel();
+        exQueue.setBackground(Color.CYAN);
         waitQueue = new JLabel();
+        exQueue.setVisible(true);
 
-        panel.setLayout( new FlowLayout( FlowLayout.CENTER ));
+        panel.setLayout( new FlowLayout( FlowLayout.LEFT ));
         panel.setVisible(true);
         panel.setEnabled(true);
-        panel.setBackground(Color.YELLOW);
+
 
         setMinimumSize(new Dimension(500,500));
         setPreferredSize(new Dimension(1000, 800));
@@ -112,6 +114,7 @@ public class Client extends JFrame {
 
         panel.add(exQueue);
         panel.add(waitQueue);
+        panel.setBackground(Color.YELLOW);
         setVisible(true);
         MyThread  connection = new MyThread();
         x = 50;
