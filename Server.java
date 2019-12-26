@@ -132,6 +132,7 @@ public class Server {
                     taskId = dis.get(id).readInt();
                     tasks.add(new Task(id, taskId, 0 ));
                     String queueTask = new String();
+                    
                     synchronized (this) {
                         for (int j = 0; j <tasks.size(); j++ )
                         {

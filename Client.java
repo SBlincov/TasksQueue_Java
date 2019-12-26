@@ -1,10 +1,13 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.RoundRectangle2D;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -17,6 +20,8 @@ public class Client extends JFrame {
     DataOutputStream dos;
     Integer x, y;
     JPanel panel;
+    JButton startTask1, startTask2;
+    JLabel exQueue, waitQueue;
     String executingTasks, tasksQueue;
     //RoundRectangle2D circle;
 
@@ -33,6 +38,9 @@ public class Client extends JFrame {
                     System.out.println(y);*/
                     tasksQueue = dis.readUTF();
                     executingTasks = dis.readUTF();
+
+                    exQueue.setText("Executing tasks " + executingTasks);
+                    waitQueue.setText("Queue of tasks " + tasksQueue);
                     panel.repaint();
                 }
             }
@@ -76,18 +84,61 @@ public class Client extends JFrame {
                 g.fillRoundRect(x, y, 5, 5, 5, 5);
             }
         };
+        startTask1 = new JButton("Start task 1");
+        startTask1.setLocation(10,10);
+        startTask1.setVisible(true);
+        startTask1.setEnabled(true);
+        startTask1.setMinimumSize(new Dimension(40,20));
+
+        startTask2 = new JButton("Start task 2");
+        startTask2.setLocation(10,40);
+        startTask2.setVisible(true);
+        startTask2.setEnabled(true);
+        startTask2.setMinimumSize(new Dimension(40,20));
+
+        exQueue = new JLabel();
+        waitQueue = new JLabel();
+
         panel.setLayout( new FlowLayout( FlowLayout.CENTER ));
         panel.setVisible(true);
         panel.setEnabled(true);
         panel.setBackground(Color.YELLOW);
+
         setMinimumSize(new Dimension(500,500));
         setPreferredSize(new Dimension(1000, 800));
         panel.setMinimumSize(new Dimension(500,500));
+        panel.add(startTask1);
+        panel.add(startTask2);
 
+        panel.add(exQueue);
+        panel.add(waitQueue);
         setVisible(true);
         MyThread  connection = new MyThread();
         x = 50;
         y = 50;
+        startTask1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    dos.writeInt(1);
+                    repaint();
+                }
+                catch (IOException ex) {
+                    ex.printStackTrace();;
+                }
+            }
+        });
+        startTask2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    dos.writeInt(2);
+                }
+                catch (IOException ex) {
+                    ex.printStackTrace();;
+                }
+            }
+        });
 
         panel.addMouseListener(new MouseListener() {
             @Override
@@ -97,14 +148,14 @@ public class Client extends JFrame {
             public void mousePressed(MouseEvent e) {
                 x = e.getX();
                 y = e.getY();
-                try {
+                /*try {
                     dos.writeInt(x);
                     dos.writeInt(y);
                 }
                 catch (java.io.IOException ex)
                 {
                     ex.printStackTrace();
-                }
+                }*/
 
                 repaint();
             }
