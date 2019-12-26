@@ -132,25 +132,24 @@ public class Server {
                     taskId = dis.get(id).readInt();
                     tasks.add(new Task(id, taskId, 0 ));
                     String queueTask = new String();
-                    for (int j = 0; j <tasks.size(); j++ )
-                    {
-                        queueTask += ("taskType " + tasks.get(j).Taskid + " Client: " + tasks.get(j).idClient + " | ");
+                    synchronized (this) {
+                        for (int j = 0; j <tasks.size(); j++ )
+                        {
+                            queueTask += ("taskType " + tasks.get(j).Taskid + " Client: " + tasks.get(j).idClient + " | ");
+                        }
                     }
                     String executingTasks = new String();
-
-                    for (int i = 0; i <threads.size(); i ++)
-                    {
-                        if (threads.get(i).busy)
-                        {
-                            executingTasks += ("task type: " + threads.get(i).t.Taskid + "Client: " + threads.get(i).t.idClient + " | ");
+                    synchronized (this ) {
+                        for (int i = 0; i < threads.size(); i++) {
+                            if (threads.get(i).busy) {
+                                executingTasks += ("task type: " + threads.get(i).t.Taskid + "Client: " + threads.get(i).t.idClient + " | ");
+                            }
                         }
                     }
                     
                     for (int i = 0; i <dos.size(); i++) {
-
-                        executingTasks += "";
-
-
+                        dos.get(i).writeUTF(queueTask);
+                        dos.get(i).writeUTF(executingTasks);
                     }
 
                 } catch (java.io.IOException ex) {
